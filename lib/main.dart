@@ -120,8 +120,8 @@ class _ElyramartAppState extends State<ElyramartApp> {
     ListTile(leading: const Icon(Icons.language), title: Text(en ? 'App language' : 'অ্যাপের ভাষা'),
       subtitle: Text(en ? 'English' : 'বাংলা'), trailing: Switch(value: english, onChanged: (v) => setState(() => english = v))),
     const ListTile(leading: Icon(Icons.admin_panel_settings_outlined), title: Text('Admin access'),
-      subtitle: Text('Admin login and role permissions require secure Firebase setup.')),
-    const ListTile(leading: Icon(Icons.info_outline), title: Text('Elyramart'), subtitle: Text('Marketplace app • Preview build')),
+      subtitle: Text('Owner admin panel appears after secure Firebase admin approval.')),
+    const ListTile(leading: Icon(Icons.info_outline), title: Text('Elyramart'), subtitle: Text('Marketplace app • Beta development build')),
   ]);
 
   void _showAccount(BuildContext context) {
