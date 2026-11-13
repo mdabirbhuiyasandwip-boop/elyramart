@@ -85,7 +85,7 @@ class _ElyramartAppState extends State<ElyramartApp> {
       subtitle: Text(en ? 'Products and sellers will appear after admin setup.' : 'অ্যাডমিন সেটআপের পর পণ্য ও বিক্রেতা দেখা যাবে।'))),
   ]);
 
-  Widget _category(IconData icon, String label, String category, bool en) => Card(child: InkWell(borderRadius: BorderRadius.circular(12), onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CatalogPage(category: category, english: en))),
+  Widget _category(IconData icon, String label, String category, bool en) => Card(child: InkWell(borderRadius: BorderRadius.circular(12), onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => (category == 'plumbing' || category == 'technician' || category == 'delivery') ? ServiceRequestPage(service: category == 'plumbing' ? (en ? 'Plumber' : 'প্লাম্বার') : category == 'technician' ? (en ? 'Technician' : 'টেকনিশিয়ান') : (en ? 'Delivery' : 'ডেলিভারি')) : CatalogPage(category: category, english: en))),
     child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, size: 30, color: brand), const SizedBox(height: 8), Text(label, style: const TextStyle(fontWeight: FontWeight.w600))])));
 
   Widget _orders(bool en) {
@@ -114,7 +114,7 @@ class _ElyramartAppState extends State<ElyramartApp> {
     Text(en ? 'Home services' : 'হোম সার্ভিস', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
     for (final item in (en ? ['Electrician','Plumber','Appliance technician'] : ['ইলেকট্রিশিয়ান','প্লাম্বার','ইলেকট্রনিক্স টেকনিশিয়ান']))
       Card(child: ListTile(leading: const Icon(Icons.build_outlined), title: Text(item), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ServiceRequestPage(service: item))))),
-    Card(child: ListTile(leading: const Icon(Icons.delivery_dining), title: Text(en ? 'Request a delivery' : 'ডেলিভারি অনুরোধ'), subtitle: Text(en ? 'Coming soon' : 'শীঘ্রই আসছে'))),
+    Card(child: ListTile(leading: const Icon(Icons.delivery_dining), title: Text(en ? 'Request a delivery' : 'ডেলিভারি অনুরোধ'), subtitle: Text(en ? 'Send a delivery request' : 'ডেলিভারির অনুরোধ পাঠান'), onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ServiceRequestPage(service: en ? 'Delivery' : 'ডেলিভারি'))))),
   ]);
 
   Widget _settings(bool en) => ListView(children: [
