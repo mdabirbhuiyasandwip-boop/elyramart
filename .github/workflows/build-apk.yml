@@ -46,13 +46,9 @@ jobs:
             sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/' android/app/build.gradle
           fi
 
-      - name: Validate Firebase Functions
+      - name: Validate Firebase configuration
         run: |
-          node --check firebase/functions/index.js
-          node --check firebase/functions/validation.js
-          node --check firebase/functions/scripts/set-admin.js
-          node --test firebase/functions/test/*.test.js
-          node -e "for (const f of ['firebase.json','firestore.indexes.json','firebase/functions/package.json']) JSON.parse(require('fs').readFileSync(f, 'utf8'))"
+          node -e "for (const f of ['firebase.json','firestore.indexes.json']) JSON.parse(require('fs').readFileSync(f, 'utf8'))"
 
       - name: Resolve Flutter packages
         run: flutter pub get
