@@ -84,7 +84,7 @@ class _ElyramartAppState extends State<ElyramartApp> {
       subtitle: Text(en ? 'Products and sellers will appear after admin setup.' : 'অ্যাডমিন সেটআপের পর পণ্য ও বিক্রেতা দেখা যাবে।'))),
   ]);
 
-  Widget _category(IconData icon, String label) => Card(child: InkWell(borderRadius: BorderRadius.circular(12), onTap: () {},
+  Widget _category(IconData icon, String label) => Card(child: InkWell(borderRadius: BorderRadius.circular(12), onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CatalogPage())),
     child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, size: 30, color: brand), const SizedBox(height: 8), Text(label, style: const TextStyle(fontWeight: FontWeight.w600))])));
 
   Widget _orders(bool en) {
