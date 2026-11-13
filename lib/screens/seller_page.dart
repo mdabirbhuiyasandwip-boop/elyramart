@@ -128,6 +128,77 @@ class _SellerPageState extends State<SellerPage> {
     }
   }
 
+  Future<void> _editProduct(
+    QueryDocumentSnapshot<Map<String, dynamic>> doc,
+  ) async {
+    final product = doc.data();
+    final title = TextEditingController(text: product['title']?.toString() ?? '');
+    final category = TextEditingController(text: product['category']?.toString() ?? '');
+    final price = TextEditingController(text: product['price']?.toString() ?? '');
+    final stock = TextEditingController(text: product['stock']?.toString() ?? '0');
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Edit product details'),
+        content: SingleChildScrollView(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            TextField(controller: title, decoration: const InputDecoration(labelText: 'Product name')),
+            TextField(controller: category, decoration: const InputDecoration(labelText: 'Category')),
+            TextField(controller: price, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Price (BDT)')),
+            TextField(controller: stock, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Stock quantity')),
+          ]),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Save changes')),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      final parsedPrice = double.tryParse(price.text.trim());
+      final parsedStock = int.tryParse(stock.text.trim());
+      if (title.text.trim().length < 2 ||
+          category.text.trim().isEmpty ||
+          parsedPrice == null ||
+          !parsedPrice.isFinite ||
+          parsedPrice <= 0 ||
+          parsedStock == null ||
+          parsedStock < 0 ||
+          parsedStock > 100000) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Enter valid product details.')),
+          );
+        }
+      } else {
+        try {
+          await doc.reference.update({
+            'title': title.text.trim(),
+            'category': category.text.trim(),
+            'price': parsedPrice,
+            'stock': parsedStock,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Product details updated.')),
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Could not update product: $e')),
+            );
+          }
+        }
+      }
+    }
+    title.dispose();
+    category.dispose();
+    price.dispose();
+    stock.dispose();
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: const Text('Seller dashboard')),
@@ -191,7 +262,15 @@ class _SellerPageState extends State<SellerPage> {
                             : Image.network(imageUrl, width: 52, height: 52, fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) => const CircleAvatar(child: Icon(Icons.broken_image_outlined))),
                         title: Text(p['title']?.toString() ?? 'Product'),
-                        subtitle: Text('BDT ${p['price'] ?? 0} • Status: ${p['status'] ?? 'pending'}'),
+                        subtitle: Text('BDT ${p['price'] ?? 0} • Stock: ${p['stock'] ?? 0} • Status: ${p['status'] ?? 'pending'}'),
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (action) {
+                            if (action == 'edit') _editProduct(doc);
+                          },
+                          itemBuilder: (_) => const [
+                            PopupMenuItem(value: 'edit', child: Text('Edit details')),
+                          ],
+                        ),
                       ),
                     );
                   }).toList(),
