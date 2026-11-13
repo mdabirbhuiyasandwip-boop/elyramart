@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart' show IdTokenResult;
 import '../services/auth_service.dart';
 import 'admin_page.dart';
 
