@@ -14,7 +14,7 @@ Flutter marketplace starter for Android, using Firebase.
 - Category-specific product browsing from the home screen
 - Customer order history and admin order status updates
 - Initial Firestore and Storage security rules
-- GitHub Actions Android release APK build
+- GitHub Actions Android release APK build and optional Play Store AAB build when private signing secrets are configured
 
 ## Firebase project
 - Project ID: `elyramart`
@@ -30,8 +30,10 @@ Flutter marketplace starter for Android, using Firebase.
 6. Follow [Owner Admin Setup](docs/OWNER_ADMIN_SETUP.md) to set the secure custom claim using Firebase Admin SDK. Never commit the service-account JSON.
 7. To run on Web or iOS, register those Firebase apps and add their exact platform options; currently only Android is configured.
 
-## Build APK
-Open GitHub Actions > **Build Elyramart Android APK**. The workflow runs on each push to `main`; download the `elyramart-release-apk` artifact after a successful run.
+## Build APK and Play Store AAB
+Open GitHub Actions > **Build Elyramart Android APK and Play Store AAB**. The workflow runs on each push to `main`. After a successful run, download the `Elyramart-Android-APK` artifact.
+
+A signed Play Store AAB is produced only after the owner configures these repository Actions secrets: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEY_ALIAS`, `ANDROID_KEYSTORE_PASSWORD`, and `ANDROID_KEY_PASSWORD`. Never put the keystore or passwords in the repository.
 
 ## Important launch gaps
-This is not yet ready for public production or Play Store release. Payment gateway integration, server-side stock reservation and authoritative order-price validation, delivery partner workflow, push notifications, product image upload, complete Bangla translation across all screens, privacy policy/terms owner review, medicine-sale legal compliance, full QA, app signing key management, Play Console declarations and closed testing are still required. Cash on delivery is the only implemented payment option. Firestore/Storage rules must be published and tested in the owner's Firebase project before launch. The release workflow currently builds an APK artifact, but Play Store signing is not configured.
+This is not yet ready for public production or Play Store release. Payment gateway integration, server-side stock reservation and authoritative order-price validation, delivery partner workflow, push notifications, product image upload, complete Bangla translation across all screens, privacy policy/terms owner review, medicine-sale legal compliance, full QA, app signing key management, Play Console declarations and closed testing are still required. Cash on delivery is the only implemented payment option. Firestore/Storage rules must be published and tested in the owner's Firebase project before launch. The release workflow can build an APK; signed AAB generation remains gated on private upload-keystore secrets.
