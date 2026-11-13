@@ -58,6 +58,7 @@ jobs:
           node -e "for (const f of ['firebase.json','firestore.indexes.json','functions/package.json']) JSON.parse(require('fs').readFileSync(f, 'utf8'))"
           node --check functions/index.js
           node --check functions/validation.js
+          node --check tools/set_admin_claim.js
           npm install --prefix functions
           npm test --prefix functions
 
