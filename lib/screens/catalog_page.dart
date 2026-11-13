@@ -107,7 +107,20 @@ class _CatalogPageState extends State<CatalogPage> {
             final doc = products[index];
             final p = doc.data();
             final stock = (p['stock'] as num?)?.toInt() ?? 0;
+            final imageUrl = p['imageUrl']?.toString() ?? '';
             return Card(child: ListTile(
+              leading: imageUrl.isEmpty
+                  ? const CircleAvatar(child: Icon(Icons.shopping_bag_outlined))
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        imageUrl,
+                        width: 56,
+                        height: 56,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const CircleAvatar(child: Icon(Icons.broken_image_outlined)),
+                      ),
+                    ),
               title: Text(p['title']?.toString() ?? 'Product'),
               subtitle: Text('${p['category'] ?? ''} • BDT ${p['price'] ?? 0} • Stock: $stock'),
               trailing: FilledButton(
