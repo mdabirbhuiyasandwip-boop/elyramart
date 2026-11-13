@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'screens/account_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -104,8 +105,6 @@ class _ElyramartAppState extends State<ElyramartApp> {
   ]);
 
   void _showAccount(BuildContext context) {
-    showDialog(context: context, builder: (_) => AlertDialog(
-      title: const Text('Account'), content: const Text('Firebase is initialized. Sign-in screens and admin permissions are the next implementation step.'),
-      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))]));
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AccountPage()));
   }
 }
