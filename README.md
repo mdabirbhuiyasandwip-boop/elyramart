@@ -9,7 +9,8 @@ Flutter marketplace starter for Android, using Firebase.
 - Seller application submission and admin approval workflow
 - Admin dashboard protected by Firebase custom claim `admin: true`
 - Product creation and product catalogue
-- Cart and cash-on-delivery order placement
+- Cart and cash-on-delivery order placement with checkout phone and delivery address
+- Category-specific product browsing from the home screen
 - Customer order history and admin order status updates
 - Initial Firestore and Storage security rules
 - GitHub Actions Android release APK build
@@ -32,4 +33,4 @@ Flutter marketplace starter for Android, using Firebase.
 Open GitHub Actions > **Build Elyramart Android APK**. The workflow runs on each push to `main`; download the `elyramart-release-apk` artifact after a successful run.
 
 ## Important launch gaps
-This is not yet ready for public production or Play Store release. Payment gateway integration, server-side stock reservation and order validation, delivery partner workflow, push notifications, seller product dashboard, account recovery/email verification, privacy policy/terms, medicine-sale legal compliance, full QA, app signing key management, Play Console declarations and closed testing are still required. Cash on delivery is the only implemented payment option. Cart is currently in-memory and resets when the app restarts. Firestore/Storage rules must be reviewed and tested before launch.
+This is not yet ready for public production or Play Store release. Payment gateway integration, server-side stock reservation and authoritative order-price validation, delivery partner workflow, push notifications, product image upload, persistent cart storage, complete Bangla translation across all screens, privacy policy/terms owner review, medicine-sale legal compliance, full QA, app signing key management, Play Console declarations and closed testing are still required. Cash on delivery is the only implemented payment option. Firestore/Storage rules must be published and tested in the owner's Firebase project before launch. The release workflow currently builds an APK artifact, but Play Store signing is not configured.
