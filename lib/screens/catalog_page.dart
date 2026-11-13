@@ -16,7 +16,7 @@ class CartService {
     final quantity = (item['quantity'] as int) + delta;
     if (quantity <= 0) { items.remove(id); } else { item['quantity'] = quantity; }
   }
-  double get total => items.values.fold(0, (sum, item) => sum + ((item['price'] as num).toDouble() * (item['quantity'] as int)));
+  double get total => items.values.fold<double>(0.0, (sum, item) => sum + ((item['price'] as num).toDouble() * (item['quantity'] as int)));
 }
 
 class CatalogPage extends StatefulWidget {
