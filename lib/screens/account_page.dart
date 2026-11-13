@@ -95,6 +95,15 @@ class _AccountPageState extends State<AccountPage> {
           const SizedBox(height: 12),
           Text(user.displayName ?? user.email ?? 'Elyramart user', textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 20),
+          if (!user.emailVerified) Card(child: ListTile(
+            leading: const Icon(Icons.mark_email_unread_outlined),
+            title: const Text('Verify your email'),
+            subtitle: const Text('Check your inbox, then sign in again after verification.'),
+            trailing: TextButton(onPressed: () async {
+              try { await _auth.resendVerification(); if (mounted) setState(() => _message = 'Verification email sent.'); }
+              catch (e) { if (mounted) setState(() => _message = e.toString()); }
+            }, child: const Text('Resend')),
+          )),
           FutureBuilder<Map<String, dynamic>?>(
             future: _auth.loadMyProfile(),
             builder: (context, snapshot) {
