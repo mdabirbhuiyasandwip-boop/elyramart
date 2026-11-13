@@ -4,6 +4,11 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
     function isAdmin() { return signedIn() && request.auth.token.admin == true; }
     function owns(uid) { return signedIn() && request.auth.uid == uid; }
+    function isSeller() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'seller';
+    }
 
     match /users/{uid} {
       allow create: if owns(uid)
@@ -25,8 +30,16 @@ service cloud.firestore {
     }
 
     match /products/{productId} {
-      allow read: if resource.data.status == 'active' || isAdmin();
-      allow create, update, delete: if isAdmin();
+      allow read: if resource.data.status == 'active' || isAdmin()
+        || (isSeller() && resource.data.sellerUid == request.auth.uid);
+      allow create: if isAdmin() || (isSeller()
+        && request.resource.data.sellerUid == request.auth.uid
+        && request.resource.data.status == 'pending');
+      allow update: if isAdmin() || (isSeller()
+        && resource.data.sellerUid == request.auth.uid
+        && request.resource.data.sellerUid == resource.data.sellerUid
+        && request.resource.data.status == resource.data.status);
+      allow delete: if isAdmin();
     }
 
     match /orders/{orderId} {
