@@ -133,7 +133,27 @@ class _AdminPageState extends State<AdminPage> {
           if (snapshot.data!.docs.isEmpty) return const ListTile(title: Text('No orders yet'));
           return Column(children: snapshot.data!.docs.map((doc) {
             final o = doc.data();
-            return Card(child: ListTile(title: Text('Order ${doc.id.substring(0, 6)}'), subtitle: Text('Status: ${o['status'] ?? 'pending'} • Total: BDT ${o['total'] ?? 0}')));
+            return Card(child: ListTile(
+              title: Text('Order ${doc.id.substring(0, 6)}'),
+              subtitle: Text('Status: ${o['status'] ?? 'pending'} • Total: BDT ${o['total'] ?? 0}'),
+              trailing: PopupMenuButton<String>(
+                tooltip: 'Update order status',
+                onSelected: (status) async {
+                  try {
+                    await doc.reference.update({'status': status, 'updatedAt': FieldValue.serverTimestamp()});
+                  } catch (e) {
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                  }
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'confirmed', child: Text('Confirm')),
+                  PopupMenuItem(value: 'processing', child: Text('Processing')),
+                  PopupMenuItem(value: 'out_for_delivery', child: Text('Out for delivery')),
+                  PopupMenuItem(value: 'delivered', child: Text('Delivered')),
+                  PopupMenuItem(value: 'cancelled', child: Text('Cancel order')),
+                ],
+              ),
+            ));
           }).toList());
         },
       ),
