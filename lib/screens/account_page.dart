@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'admin_page.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -92,6 +93,17 @@ class _AccountPageState extends State<AccountPage> {
           const SizedBox(height: 12),
           Text(user.displayName ?? user.email ?? 'Elyramart user', textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 20),
+          FutureBuilder<IdTokenResult>(
+            future: user.getIdTokenResult(true),
+            builder: (context, snapshot) {
+              final isAdmin = snapshot.data?.claims?['admin'] == true;
+              if (snapshot.hasError) return const Text('Could not verify account permissions.');
+              if (isAdmin) return FilledButton.icon(
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AdminPage())),
+                icon: const Icon(Icons.admin_panel_settings), label: const Text('Open admin dashboard'));
+              return const SizedBox.shrink();
+            },
+          ),
           FilledButton.icon(onPressed: _sellerApplication, icon: const Icon(Icons.storefront_outlined), label: const Text('Apply as a seller')),
           OutlinedButton.icon(onPressed: () async { await _auth.signOut(); if (mounted) setState(() {}); }, icon: const Icon(Icons.logout), label: const Text('Sign out')),
           if (_message.isNotEmpty) Text(_message),
