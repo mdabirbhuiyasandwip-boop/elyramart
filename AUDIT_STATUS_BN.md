@@ -19,7 +19,7 @@
 - Repository-তে বাংলা audit report আপডেট করা হয়েছে।
 
 ## বাস্তব পরীক্ষা ও যা এখনো নিশ্চিত নয়
-- v0.21 source package থেকে Firebase Functions validation test স্থানীয়ভাবে চালানো হয়েছে: 5 passed, 0 failed। ওই Functions package এখনো repository-তে নেই; তাই এটিকে repository CI বা live backend test বলা যাবে না।
+- v0.21 source package-এর আগের validation test 5/5 সফল হয়েছিল। এই ধাপে repository-তে trusted checkout Cloud Function ও validation tests যোগ করা হয়েছে; স্থানীয় Node validation tests 3/3 সফল। Cloud Function deploy বা live Firebase test এখনো হয়নি।
 - এই পরিবেশে Flutter/Dart SDK নেই; Flutter analyze/test এবং Android APK/AAB build-এর সফল ফল এখনো পাওয়া যায়নি।
 - GitHub Actions commit status-এ এখনো কোনো completed check দেখা যায়নি।
 - Firebase rules/Firestore/Auth/Storage live project-এ deploy বা end-to-end পরীক্ষা করা হয়নি।
@@ -30,7 +30,7 @@
 2. Firebase Console-এ Email/Password Auth enable, Firestore ও Storage initialize করা।
 3. Owner-এর অনুমতিতে Firestore/Storage rules deploy ও বাস্তব customer/seller/admin access পরীক্ষা করা।
 4. Owner-এর Firebase Auth UID দিয়ে trusted environment-এ Admin custom claim bootstrap করা।
-5. Server-validated checkout: product existence, active status, stock, current price, quantity ও order total server-side যাচাই; stock decrement transaction-এ করা।
+5. Callable checkout Cloud Function deploy করে real Firebase project-এ order total, price, stock decrement এবং concurrent order behaviour পরীক্ষা করা।
 6. Product image upload UI, seller inventory update, seller order fulfilment ও customer order tracking পরীক্ষা/সম্পূর্ণ করা।
 7. বাংলা/English অনুবাদ account, seller, admin, cart ও service screens-এ সম্পূর্ণ করা।
 8. Private Android upload keystore তৈরি করে GitHub Actions Secrets-এ `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEY_ALIAS`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_PASSWORD` সেট করা।
