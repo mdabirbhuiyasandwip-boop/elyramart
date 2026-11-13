@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -165,16 +166,14 @@ class _CartPageState extends State<CartPage> {
         'quantity': entry.value['quantity'],
         'lineTotal': (entry.value['price'] as num) * (entry.value['quantity'] as int),
       }).toList();
-      await FirebaseFirestore.instance.collection('orders').add({
-        'customerUid': user.uid,
+      final callable = FirebaseFunctions.instance.httpsCallable('placeOrder');
+      await callable.call({
+        'items': cart.items.entries.map((entry) => {
+          'productId': entry.key,
+          'quantity': entry.value['quantity'],
+        }).toList(),
         'phone': _phone.text.trim(),
-        'items': lines,
-        'total': cart.total,
         'deliveryAddress': _address.text.trim(),
-        'status': 'pending',
-        'paymentMethod': 'cash_on_delivery',
-        'paymentStatus': 'unpaid',
-        'createdAt': FieldValue.serverTimestamp(),
       });
       await cart.clear();
       if (!mounted) return;
