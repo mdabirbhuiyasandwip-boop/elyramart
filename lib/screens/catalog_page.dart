@@ -38,7 +38,13 @@ class CartService {
   Future<void> add(String id, Map<String, dynamic> product) async {
     await load();
     final existing = items[id];
-    items[id] = {...product, 'quantity': (existing?['quantity'] as int? ?? 0) + 1};
+    items[id] = {
+      'title': product['title']?.toString() ?? 'Product',
+      'category': product['category']?.toString() ?? '',
+      'price': (product['price'] as num).toDouble(),
+      'stock': (product['stock'] as num?)?.toInt() ?? 0,
+      'quantity': (existing?['quantity'] as int? ?? 0) + 1,
+    };
     await _save();
   }
 
