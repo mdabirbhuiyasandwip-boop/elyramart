@@ -141,6 +141,36 @@ class _AdminPageState extends State<AdminPage> {
         },
       ),
       const SizedBox(height: 20),
+      Text('Home service requests', style: Theme.of(context).textTheme.titleLarge),
+      StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: _db.collection('serviceRequests').orderBy('createdAt', descending: true).limit(30).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) return Text('Service requests error: ${snapshot.error}');
+          if (!snapshot.hasData) return const LinearProgressIndicator();
+          if (snapshot.data!.docs.isEmpty) return const ListTile(title: Text('No service requests yet'));
+          return Column(children: snapshot.data!.docs.map((doc) {
+            final request = doc.data();
+            return Card(child: ListTile(
+              title: Text(request['service']?.toString() ?? 'Service'),
+              subtitle: Text('${request['details'] ?? ''} • ${request['phone'] ?? ''} • ${request['address'] ?? ''}\nStatus: ${request['status'] ?? 'pending'}'),
+              isThreeLine: true,
+              trailing: PopupMenuButton<String>(
+                onSelected: (status) async {
+                  try { await doc.reference.update({'status': status, 'updatedAt': FieldValue.serverTimestamp()}); }
+                  catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e'))); }
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'accepted', child: Text('Accept')),
+                  PopupMenuItem(value: 'assigned', child: Text('Technician assigned')),
+                  PopupMenuItem(value: 'completed', child: Text('Completed')),
+                  PopupMenuItem(value: 'cancelled', child: Text('Cancel')),
+                ],
+              ),
+            ));
+          }).toList());
+        },
+      ),
+      const SizedBox(height: 20),
       Text('Recent orders', style: Theme.of(context).textTheme.titleLarge),
       StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: _db.collection('orders').orderBy('createdAt', descending: true).limit(30).snapshots(),
