@@ -117,7 +117,25 @@ class _AdminPageState extends State<AdminPage> {
             return Card(child: ListTile(
               title: Text(p['title']?.toString() ?? 'Product'),
               subtitle: Text('${p['category'] ?? ''} • BDT ${p['price'] ?? 0} • Stock: ${p['stock'] ?? 0}'),
-              trailing: IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => doc.reference.delete()),
+              trailing: PopupMenuButton<String>(
+                tooltip: 'Moderate product',
+                onSelected: (action) async {
+                  try {
+                    if (action == 'delete') {
+                      await doc.reference.delete();
+                    } else {
+                      await doc.reference.update({'status': action, 'reviewedAt': FieldValue.serverTimestamp()});
+                    }
+                  } catch (e) {
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                  }
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'active', child: Text('Approve / publish')),
+                  PopupMenuItem(value: 'rejected', child: Text('Reject')),
+                  PopupMenuItem(value: 'delete', child: Text('Delete')),
+                ],
+              ),
             ));
           }).toList());
         },
