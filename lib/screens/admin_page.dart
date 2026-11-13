@@ -114,9 +114,22 @@ class _AdminPageState extends State<AdminPage> {
           if (snapshot.data!.docs.isEmpty) return const ListTile(title: Text('No products added yet'));
           return Column(children: snapshot.data!.docs.map((doc) {
             final p = doc.data();
+            final imageUrl = p['imageUrl']?.toString() ?? '';
             return Card(child: ListTile(
+              leading: imageUrl.isEmpty
+                  ? const CircleAvatar(child: Icon(Icons.inventory_2_outlined))
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        imageUrl,
+                        width: 52,
+                        height: 52,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const CircleAvatar(child: Icon(Icons.broken_image_outlined)),
+                      ),
+                    ),
               title: Text(p['title']?.toString() ?? 'Product'),
-              subtitle: Text('${p['category'] ?? ''} • BDT ${p['price'] ?? 0} • Stock: ${p['stock'] ?? 0}'),
+              subtitle: Text('${p['category'] ?? ''} • BDT ${p['price'] ?? 0} • Stock: ${p['stock'] ?? 0} • Status: ${p['status'] ?? 'pending'}'),
               trailing: PopupMenuButton<String>(
                 tooltip: 'Moderate product',
                 onSelected: (action) async {
@@ -182,7 +195,13 @@ class _AdminPageState extends State<AdminPage> {
             final o = doc.data();
             return Card(child: ListTile(
               title: Text('Order ${doc.id.substring(0, 6)}'),
-              subtitle: Text('Status: ${o['status'] ?? 'pending'} • Total: BDT ${o['total'] ?? 0}'),
+              subtitle: Text(
+                'Status: ${o['status'] ?? 'pending'} • Total: BDT ${o['total'] ?? 0}'
+                '\\nPhone: ${o['phone'] ?? '—'}'
+                '\\nAddress: ${o['deliveryAddress'] ?? '—'}'
+                '\\nPayment: ${o['paymentMethod'] ?? 'cash_on_delivery'}',
+              ),
+              isThreeLine: true,
               trailing: PopupMenuButton<String>(
                 tooltip: 'Update order status',
                 onSelected: (status) async {
