@@ -5,11 +5,12 @@ Flutter marketplace starter for Android, using Firebase.
 ## Implemented
 - English/Bangla interface toggle
 - Firebase Android initialization using the owner's Android app configuration
-- Customer email/password registration and sign-in
+- Customer email/password registration, sign-in, password reset and email verification email
 - Seller application submission and admin approval workflow
 - Admin dashboard protected by Firebase custom claim `admin: true`
 - Product creation and product catalogue
-- Cart and cash-on-delivery order placement with checkout phone and delivery address
+- Persistent shopping cart (saved on device) and cash-on-delivery checkout with phone and delivery address
+- Home-service request submission and admin request status workflow
 - Category-specific product browsing from the home screen
 - Customer order history and admin order status updates
 - Initial Firestore and Storage security rules
@@ -33,4 +34,4 @@ Flutter marketplace starter for Android, using Firebase.
 Open GitHub Actions > **Build Elyramart Android APK**. The workflow runs on each push to `main`; download the `elyramart-release-apk` artifact after a successful run.
 
 ## Important launch gaps
-This is not yet ready for public production or Play Store release. Payment gateway integration, server-side stock reservation and authoritative order-price validation, delivery partner workflow, push notifications, product image upload, persistent cart storage, complete Bangla translation across all screens, privacy policy/terms owner review, medicine-sale legal compliance, full QA, app signing key management, Play Console declarations and closed testing are still required. Cash on delivery is the only implemented payment option. Firestore/Storage rules must be published and tested in the owner's Firebase project before launch. The release workflow currently builds an APK artifact, but Play Store signing is not configured.
+This is not yet ready for public production or Play Store release. Payment gateway integration, server-side stock reservation and authoritative order-price validation, delivery partner workflow, push notifications, product image upload, complete Bangla translation across all screens, privacy policy/terms owner review, medicine-sale legal compliance, full QA, app signing key management, Play Console declarations and closed testing are still required. Cash on delivery is the only implemented payment option. Firestore/Storage rules must be published and tested in the owner's Firebase project before launch. The release workflow currently builds an APK artifact, but Play Store signing is not configured.
