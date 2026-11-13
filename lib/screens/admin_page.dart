@@ -197,9 +197,9 @@ class _AdminPageState extends State<AdminPage> {
               title: Text('Order ${doc.id.substring(0, 6)}'),
               subtitle: Text(
                 'Status: ${o['status'] ?? 'pending'} • Total: BDT ${o['total'] ?? 0}'
-                '\\nPhone: ${o['phone'] ?? '—'}'
-                '\\nAddress: ${o['deliveryAddress'] ?? '—'}'
-                '\\nPayment: ${o['paymentMethod'] ?? 'cash_on_delivery'}',
+                '\nPhone: ${o['phone'] ?? '—'}'
+                '\nAddress: ${o['deliveryAddress'] ?? '—'}'
+                '\nPayment: ${o['paymentMethod'] ?? 'cash_on_delivery'}',
               ),
               isThreeLine: true,
               trailing: PopupMenuButton<String>(
