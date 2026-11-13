@@ -51,14 +51,27 @@ class _SellerPageState extends State<SellerPage> {
   Future<String> _uploadImage(String uid) async {
     final file = _image;
     if (file == null) return '';
+    final extension = file.name.contains('.')
+        ? file.name.split('.').last.toLowerCase()
+        : 'jpg';
+    const allowedTypes = {
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'webp': 'image/webp',
+    };
+    final contentType = allowedTypes[extension];
+    if (contentType == null) {
+      throw Exception('Please choose a JPG, PNG or WebP image.');
+    }
     final ref = FirebaseStorage.instance
         .ref()
         .child('product-images')
         .child(uid)
-        .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
+        .child('${DateTime.now().millisecondsSinceEpoch}.$extension');
     final task = await ref.putFile(
       File(file.path),
-      SettableMetadata(contentType: 'image/jpeg'),
+      SettableMetadata(contentType: contentType),
     );
     return task.ref.getDownloadURL();
   }
