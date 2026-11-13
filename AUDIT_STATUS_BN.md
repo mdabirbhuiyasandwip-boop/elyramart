@@ -1,20 +1,26 @@
-# Elyramart repository audit — 2026-11-13
+# Elyramart — কাজের অগ্রগতি ও রিলিজ অডিট
+সর্বশেষ আপডেট: 2026-11-13
 
-## Findings
-- The current `main` branch contains a Flutter entry point at `lib/main.dart`, but it imports `firebase_options.dart` and `screens/account_page.dart`, `screens/catalog_page.dart`, and `screens/service_request_page.dart`. These paths were not found in the repository during this audit.
-- `pubspec.yaml` is present, but the repository is not yet a complete, self-consistent Flutter source tree; a successful Android build cannot be assumed.
-- `firestore.rules`, `storage.rules`, and `.github/workflows/build-apk.yml` are present.
-- A newer v0.21 source archive exists separately and includes `lib/backend/marketplace_service.dart`, Firebase Functions, security rules, and an APK/AAB workflow. It has not yet been synchronized into this repository.
-- Backend validation tests from the v0.21 source archive were run locally: 5 passed, 0 failed.
-- Flutter/Dart SDK was unavailable in the audit environment; no Flutter compile or Android APK/AAB build is claimed.
+## এই ধাপে সম্পন্ন
+- `lib/firebase_options.dart` যোগ করা হয়েছে; প্রদত্ত Elyramart Firebase Android project ID, app ID ও storage bucket ব্যবহার করা হয়েছে।
+- `lib/screens/account_page.dart` যোগ: Email/password customer registration, sign-in এবং sign-out।
+- `lib/screens/catalog_page.dart` যোগ: Firestore থেকে active product list এবং product detail preview।
+- `lib/screens/service_request_page.dart` যোগ: signed-in customer-এর technician/home-service request submission।
+- Android workflow নিরাপদ করা হয়েছে: root source overwrite না করে temporary Flutter Android host project তৈরি করে; Flutter analyze/test, APK এবং AAB build চালায়।
+- Storage rules সংশোধন: শুধু approved seller নিজের product image path-এ JPG/PNG/WEBP 5 MB-এর কম ছবি upload করতে পারবে; admin-ও পারবে।
+- v0.21 source package-এর Firebase Functions syntax checks ও 5টি validation test স্থানীয়ভাবে চালানো হয়েছে: 5 passed, 0 failed।
 
-## Required next actions
-1. Synchronize one complete, matching source version into the repository (do not mix files from older and newer versions).
-2. Confirm the Android Firebase configuration is correctly associated with package `com.elyramartbd.elyramart`; do not commit service-account credentials or signing keys.
-3. Deploy and test Firestore/Storage rules and Firebase Functions in the owner's Firebase project.
-4. Run Flutter analyze, widget tests, and Android APK/AAB build using GitHub Actions.
-5. Test customer, seller, admin, product image upload, checkout, order status, and technician/home-service flows on a physical Android device.
-6. Complete privacy policy, terms, Play Console declarations, signing, and closed testing before public release.
+## এখনো সম্পন্ন নয় / বাহ্যিক অনুমতি প্রয়োজন
+1. GitHub Actions-এর Flutter analyze/test এবং Android APK/AAB build সফল হয়েছে কি না—run result পাওয়া/যাচাই করা বাকি।
+2. Firebase Console-এ Email/Phone Authentication provider enable, Firestore ও Storage initialize করা বাকি।
+3. Firestore rules, Storage rules, indexes ও Cloud Functions owner-এর Firebase project-এ deploy করা বাকি।
+4. Owner-এর Firebase Auth UID দিয়ে trusted environment-এ Admin custom claim bootstrap করা বাকি; Admin secret বা service-account key chat/GitHub-এ দেওয়া যাবে না।
+5. Seller application/approval, product create/update, cart, server-validated checkout, order status এবং admin panel সম্পূর্ণ end-to-end test বাকি।
+6. Android release signing keystore এবং Play Console upload key setup বাকি; debug-signed AAB Play Store-এ জমা দেওয়া যাবে না।
+7. Privacy policy URL, Data safety, content rating, target audience, app access instructions এবং Play Console Closed Testing সম্পন্ন করা বাকি।
+8. বাস্তব Android ফোনে login, network error, order ও service request পরীক্ষা বাকি।
 
-## Security
-Never commit Firebase Admin service-account JSON, Play signing keystore, passwords, or private API credentials. Firebase client configuration is not an Admin credential, but repository visibility and Firebase API restrictions should still be reviewed.
+## সীমাবদ্ধতা
+- এই পরিবেশে Flutter/Dart SDK নেই; তাই Flutter compile/analyze/test বা APK/AAB তৈরি হয়েছে বলে দাবি করা হচ্ছে না।
+- Firebase project-এ সরাসরি deploy করার অনুমতি/সংযোগ এই কাজের পরিবেশে নেই।
+- Firebase client config app initialization-এর জন্য ব্যবহৃত; Admin service-account JSON, passwords, signing keystore এবং private keys কখনো repository-তে commit করা যাবে না।
