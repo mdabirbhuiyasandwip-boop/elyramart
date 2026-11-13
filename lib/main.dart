@@ -171,7 +171,7 @@ class _ElyramartAppState extends State<ElyramartApp> {
                   leading: const Icon(Icons.handyman_outlined),
                   title: Text(request['service']?.toString() ?? 'Service'),
                   subtitle: Text(
-                    '${request['details'] ?? ''}\\n'
+                    '${request['details'] ?? ''}\n'
                     '${en ? 'Status' : 'অবস্থা'}: $status',
                   ),
                   isThreeLine: true,
