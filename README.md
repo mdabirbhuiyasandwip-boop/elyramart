@@ -29,7 +29,7 @@ Flutter marketplace starter for Android, using Firebase.
 5. From a trusted computer with Firebase CLI installed, run `firebase deploy --only firestore:rules,firestore:indexes,storage,functions` from the repository root. The `placeOrder` callable function validates current product prices and stock and creates orders transactionally.
 6. Enable billing for Firebase Cloud Functions if the project requires it, and confirm the function deploys in `asia-south1`.
 7. Create the owner's account through the app. Copy its Firebase Authentication UID.
-8. Follow [Owner Admin Setup](docs/OWNER_ADMIN_SETUP.md) to set the secure custom claim using Firebase Admin SDK. Never commit the service-account JSON.
+8. Follow [Owner Admin Setup](docs/OWNER_ADMIN_SETUP.md) to set the secure custom claim using Firebase Admin SDK. Run `npm install firebase-admin` from the local repository root first. Never commit the service-account JSON.
 9. To run on Web or iOS, register those Firebase apps and add their exact platform options; currently only Android is configured.
 
 ## Build APK and Play Store AAB
