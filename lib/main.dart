@@ -100,11 +100,40 @@ class _ElyramartAppState extends State<ElyramartApp> {
         if (orders.isEmpty) return Center(child: Text(en ? 'No orders yet' : 'এখনো কোনো অর্ডার নেই'));
         return ListView(padding: const EdgeInsets.all(12), children: orders.map((doc) {
           final data = doc.data();
-          return Card(child: ListTile(
-            leading: const Icon(Icons.receipt_long_outlined),
-            title: Text('BDT ${data['total'] ?? 0}'),
-            subtitle: Text('${data['status'] ?? 'pending'} • ${data['paymentMethod'] ?? 'cash_on_delivery'}'),
-          ));
+          final items = data['items'] is List
+              ? List<Map<String, dynamic>>.from(
+                  (data['items'] as List).whereType<Map>().map((item) => Map<String, dynamic>.from(item)),
+                )
+              : <Map<String, dynamic>>[];
+          return Card(
+            child: ExpansionTile(
+              leading: const Icon(Icons.receipt_long_outlined),
+              title: Text('BDT ${data['total'] ?? 0}'),
+              subtitle: Text(
+                '${data['status'] ?? 'pending'} • '
+                '${en ? 'Cash on delivery' : 'ক্যাশ অন ডেলিভারি'}',
+              ),
+              children: [
+                for (final item in items)
+                  ListTile(
+                    dense: true,
+                    title: Text(item['title']?.toString() ?? 'Product'),
+                    subtitle: Text(
+                      '× ${item['quantity'] ?? 1} • '
+                      'BDT ${item['unitPrice'] ?? 0}',
+                    ),
+                  ),
+                ListTile(
+                  leading: const Icon(Icons.phone_outlined),
+                  title: Text(data['phone']?.toString() ?? '—'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.location_on_outlined),
+                  title: Text(data['deliveryAddress']?.toString() ?? '—'),
+                ),
+              ],
+            ),
+          );
         }).toList());
       },
     );
