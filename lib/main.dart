@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() => runApp(const ElyramartApp());
+Future<void> main() async {\n  WidgetsFlutterBinding.ensureInitialized();\n  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);\n  runApp(const ElyramartApp());\n}
 
 class ElyramartApp extends StatefulWidget {
   const ElyramartApp({super.key});
@@ -99,7 +101,7 @@ class _ElyramartAppState extends State<ElyramartApp> {
 
   void _showAccount(BuildContext context) {
     showDialog(context: context, builder: (_) => AlertDialog(
-      title: const Text('Account'), content: const Text('Customer and seller sign-in will be enabled after Firebase Authentication setup.'),
+      title: const Text('Account'), content: const Text('Firebase is initialized. Sign-in screens and admin permissions are the next implementation step.'),
       actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))]));
   }
 }
