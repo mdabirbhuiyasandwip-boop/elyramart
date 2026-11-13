@@ -33,3 +33,12 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Node / Firebase local dependencies and secrets
+node_modules/
+functions/node_modules/
+.firebase/
+.firebaserc
+android/key.properties
+service-account*.json
+*-service-account*.json
