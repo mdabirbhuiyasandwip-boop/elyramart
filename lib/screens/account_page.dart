@@ -141,6 +141,11 @@ class _AccountPageState extends State<AccountPage> {
           TextFormField(controller: _password, obscureText: true, decoration: const InputDecoration(labelText: 'Password (minimum 6 characters)', border: OutlineInputBorder()), validator: (v) => (v == null || v.length < 6) ? 'Use at least 6 characters' : null),
           const SizedBox(height: 16),
           FilledButton(onPressed: _busy ? null : _submit, child: _busy ? const CircularProgressIndicator() : Text(_register ? 'Create account' : 'Sign in')),
+          if (!_register) TextButton(onPressed: _busy ? null : () async {
+            if (!_email.text.contains('@')) { setState(() => _message = 'Enter your email first.'); return; }
+            try { await _auth.sendPasswordReset(_email.text); setState(() => _message = 'Password reset email sent.'); }
+            catch (e) { setState(() => _message = e.toString()); }
+          }, child: const Text('Forgot password?')),
           TextButton(onPressed: _busy ? null : () => setState(() { _register = !_register; _message = ''; }), child: Text(_register ? 'Already have an account? Sign in' : 'New here? Create an account')),
           if (_message.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 12), child: Text(_message, textAlign: TextAlign.center)),
         ]),
