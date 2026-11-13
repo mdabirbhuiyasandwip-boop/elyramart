@@ -73,19 +73,19 @@ class _ElyramartAppState extends State<ElyramartApp> {
     const SizedBox(height: 12),
     GridView.count(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.5,
       children: [
-        _category(Icons.medication_outlined, en ? 'Medicine' : 'ওষুধ'),
-        _category(Icons.shopping_basket_outlined, en ? 'Grocery' : 'মুদি'),
-        _category(Icons.face_retouching_natural, en ? 'Beauty & Care' : 'কসমেটিকস'),
-        _category(Icons.plumbing_outlined, en ? 'Plumbing' : 'প্লাম্বিং'),
-        _category(Icons.electrical_services_outlined, en ? 'Technician' : 'টেকনিশিয়ান'),
-        _category(Icons.delivery_dining, en ? 'Delivery' : 'ডেলিভারি'),
+        _category(Icons.medication_outlined, en ? 'Medicine' : 'ওষুধ', 'medicine', en),
+        _category(Icons.shopping_basket_outlined, en ? 'Grocery' : 'মুদি', 'grocery', en),
+        _category(Icons.face_retouching_natural, en ? 'Beauty & Care' : 'কসমেটিকস', 'beauty', en),
+        _category(Icons.plumbing_outlined, en ? 'Plumbing' : 'প্লাম্বিং', 'plumbing', en),
+        _category(Icons.electrical_services_outlined, en ? 'Technician' : 'টেকনিশিয়ান', 'technician', en),
+        _category(Icons.delivery_dining, en ? 'Delivery' : 'ডেলিভারি', 'delivery', en),
       ]),
     const SizedBox(height: 18),
     Card(child: ListTile(leading: const Icon(Icons.info_outline), title: Text(en ? 'Marketplace preview' : 'মার্কেটপ্লেস প্রিভিউ'),
       subtitle: Text(en ? 'Products and sellers will appear after admin setup.' : 'অ্যাডমিন সেটআপের পর পণ্য ও বিক্রেতা দেখা যাবে।'))),
   ]);
 
-  Widget _category(IconData icon, String label) => Card(child: InkWell(borderRadius: BorderRadius.circular(12), onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CatalogPage())),
+  Widget _category(IconData icon, String label, String category, bool en) => Card(child: InkWell(borderRadius: BorderRadius.circular(12), onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CatalogPage(category: category, english: en))),
     child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, size: 30, color: brand), const SizedBox(height: 8), Text(label, style: const TextStyle(fontWeight: FontWeight.w600))])));
 
   Widget _orders(bool en) {
