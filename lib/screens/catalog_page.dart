@@ -159,14 +159,7 @@ class _CartPageState extends State<CartPage> {
     setState(() => _busy = true);
     try {
       final cart = CartService.instance;
-      final lines = cart.items.entries.map((entry) => {
-        'productId': entry.key,
-        'title': entry.value['title'],
-        'unitPrice': entry.value['price'],
-        'quantity': entry.value['quantity'],
-        'lineTotal': (entry.value['price'] as num) * (entry.value['quantity'] as int),
-      }).toList();
-      final callable = FirebaseFunctions.instance.httpsCallable('placeOrder');
+      final callable = FirebaseFunctions.instanceFor(region: 'asia-south1').httpsCallable('placeOrder');
       await callable.call({
         'items': cart.items.entries.map((entry) => {
           'productId': entry.key,
