@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'screens/account_page.dart';
+import 'screens/catalog_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +40,7 @@ class _ElyramartAppState extends State<ElyramartApp> {
             const Text('Elyramart', style: TextStyle(fontWeight: FontWeight.bold)),
           ]),
           actions: [
+            IconButton(onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CatalogPage())), icon: const Icon(Icons.storefront_outlined)),
             TextButton(onPressed: () => setState(() => english = !english),
               child: Text(english ? 'বাংলা' : 'English')),
             IconButton(onPressed: () => _showAccount(context), icon: const Icon(Icons.account_circle_outlined)),
@@ -83,11 +87,27 @@ class _ElyramartAppState extends State<ElyramartApp> {
   Widget _category(IconData icon, String label) => Card(child: InkWell(borderRadius: BorderRadius.circular(12), onTap: () {},
     child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, size: 30, color: brand), const SizedBox(height: 8), Text(label, style: const TextStyle(fontWeight: FontWeight.w600))])));
 
-  Widget _orders(bool en) => Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-    const Icon(Icons.receipt_long_outlined, size: 54, color: Colors.grey), const SizedBox(height: 12),
-    Text(en ? 'No orders yet' : 'এখনো কোনো অর্ডার নেই'),
-    Text(en ? 'Your orders will appear here.' : 'আপনার অর্ডার এখানে দেখা যাবে।'),
-  ]));
+  Widget _orders(bool en) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return Center(child: Text(en ? 'Sign in to view your orders.' : 'অর্ডার দেখতে লগইন করুন।'));
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance.collection('orders').where('customerUid', isEqualTo: user.uid).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) return Center(child: Text('Could not load orders: ${snapshot.error}'));
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+        final orders = snapshot.data!.docs;
+        if (orders.isEmpty) return Center(child: Text(en ? 'No orders yet' : 'এখনো কোনো অর্ডার নেই'));
+        return ListView(padding: const EdgeInsets.all(12), children: orders.map((doc) {
+          final data = doc.data();
+          return Card(child: ListTile(
+            leading: const Icon(Icons.receipt_long_outlined),
+            title: Text('BDT ${data['total'] ?? 0}'),
+            subtitle: Text('${data['status'] ?? 'pending'} • ${data['paymentMethod'] ?? 'cash_on_delivery'}'),
+          ));
+        }).toList());
+      },
+    );
+  }
 
   Widget _services(bool en) => ListView(padding: const EdgeInsets.all(16), children: [
     Text(en ? 'Home services' : 'হোম সার্ভিস', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
