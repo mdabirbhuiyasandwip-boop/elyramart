@@ -20,7 +20,9 @@ class CartService {
 }
 
 class CatalogPage extends StatefulWidget {
-  const CatalogPage({super.key});
+  const CatalogPage({super.key, this.category, this.english = true});
+  final String? category;
+  final bool english;
   @override
   State<CatalogPage> createState() => _CatalogPageState();
 }
@@ -29,16 +31,21 @@ class _CatalogPageState extends State<CatalogPage> {
   final _db = FirebaseFirestore.instance;
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Shop products'), actions: [
-      IconButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CartPage())).then((_) => setState(() {})), icon: Badge(label: Text(CartService.instance.items.length.toString()), child: const Icon(Icons.shopping_cart_outlined))),
+    appBar: AppBar(title: Text(widget.english ? 'Shop products' : 'পণ্য কিনুন'), actions: [
+      IconButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CartPage(english: widget.english))).then((_) => setState(() {})), icon: Badge(label: Text(CartService.instance.items.length.toString()), child: const Icon(Icons.shopping_cart_outlined))),
     ]),
     body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: _db.collection('products').where('status', isEqualTo: 'active').snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Center(child: Text('Could not load products: ${snapshot.error}'));
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-        final products = snapshot.data!.docs;
-        if (products.isEmpty) return const Center(child: Text('No products available yet.'));
+        final allProducts = snapshot.data!.docs;
+        final selected = widget.category?.toLowerCase();
+        final products = selected == null ? allProducts : allProducts.where((doc) {
+          final value = (doc.data()['category'] ?? '').toString().toLowerCase();
+          return value == selected || (selected == 'beauty' && (value == 'beauty & care' || value == 'cosmetics'));
+        }).toList();
+        if (products.isEmpty) return Center(child: Text(widget.english ? 'No products available in this category yet.' : 'এই ক্যাটাগরিতে এখনো কোনো পণ্য নেই।'));
         return ListView.builder(
           padding: const EdgeInsets.all(12),
           itemCount: products.length,
@@ -66,24 +73,29 @@ class _CatalogPageState extends State<CatalogPage> {
 }
 
 class CartPage extends StatefulWidget {
-  const CartPage({super.key});
+  const CartPage({super.key, this.english = true});
+  final bool english;
   @override
   State<CartPage> createState() => _CartPageState();
 }
 
 class _CartPageState extends State<CartPage> {
   final _address = TextEditingController();
+  final _phone = TextEditingController();
   bool _busy = false;
   @override
-  void dispose() { _address.dispose(); super.dispose(); }
+  void dispose() { _address.dispose(); _phone.dispose(); super.dispose(); }
 
   Future<void> _placeOrder() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please sign in before placing an order.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.english ? 'Please sign in before placing an order.' : 'অর্ডার করতে আগে লগইন করুন।')));
       return;
     }
-    if (_address.text.trim().isEmpty || CartService.instance.items.isEmpty) return;
+    if (_address.text.trim().length < 6 || _phone.text.trim().length < 6 || CartService.instance.items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.english ? 'Enter a valid phone number and delivery address.' : 'সঠিক ফোন নম্বর ও ঠিকানা লিখুন।')));
+      return;
+    }
     setState(() => _busy = true);
     try {
       final cart = CartService.instance;
@@ -96,6 +108,7 @@ class _CartPageState extends State<CartPage> {
       }).toList();
       await FirebaseFirestore.instance.collection('orders').add({
         'customerUid': user.uid,
+        'phone': _phone.text.trim(),
         'items': lines,
         'total': cart.total,
         'deliveryAddress': _address.text.trim(),
@@ -106,7 +119,7 @@ class _CartPageState extends State<CartPage> {
       });
       cart.items.clear();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Order placed. Pay cash on delivery.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.english ? 'Order placed. Pay cash on delivery.' : 'অর্ডার সম্পন্ন হয়েছে। পণ্য পেয়ে টাকা দিন।')));
       Navigator.pop(context);
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Order failed: $e')));
@@ -119,9 +132,9 @@ class _CartPageState extends State<CartPage> {
   Widget build(BuildContext context) {
     final cart = CartService.instance;
     return Scaffold(
-      appBar: AppBar(title: const Text('Your cart')),
+      appBar: AppBar(title: Text(widget.english ? 'Your cart' : 'আপনার কার্ট')),
       body: ListView(padding: const EdgeInsets.all(16), children: [
-        if (cart.items.isEmpty) const Padding(padding: EdgeInsets.all(30), child: Text('Your cart is empty.', textAlign: TextAlign.center)),
+        if (cart.items.isEmpty) Padding(padding: const EdgeInsets.all(30), child: Text(widget.english ? 'Your cart is empty.' : 'আপনার কার্ট খালি।', textAlign: TextAlign.center)),
         ...cart.items.entries.map((entry) {
           final p = entry.value;
           return Card(child: ListTile(
@@ -135,11 +148,13 @@ class _CartPageState extends State<CartPage> {
         }),
         if (cart.items.isNotEmpty) ...[
           const SizedBox(height: 12),
-          Text('Total: BDT ${cart.total.toStringAsFixed(2)}', style: Theme.of(context).textTheme.titleLarge),
+          Text('${widget.english ? 'Total' : 'সর্বমোট'}: BDT ${cart.total.toStringAsFixed(2)}', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 16),
-          TextField(controller: _address, maxLines: 3, decoration: const InputDecoration(labelText: 'Delivery address', border: OutlineInputBorder())),
+          TextField(controller: _phone, keyboardType: TextInputType.phone, decoration: InputDecoration(labelText: widget.english ? 'Contact phone' : 'যোগাযোগের ফোন নম্বর', border: const OutlineInputBorder())),
+          const SizedBox(height: 12),
+          TextField(controller: _address, maxLines: 3, decoration: InputDecoration(labelText: widget.english ? 'Delivery address' : 'ডেলিভারি ঠিকানা', border: const OutlineInputBorder())),
           const SizedBox(height: 16),
-          FilledButton(onPressed: _busy ? null : _placeOrder, child: _busy ? const CircularProgressIndicator() : const Text('Place order • Cash on delivery')),
+          FilledButton(onPressed: _busy ? null : _placeOrder, child: _busy ? const CircularProgressIndicator() : Text(widget.english ? 'Place order • Cash on delivery' : 'অর্ডার করুন • ক্যাশ অন ডেলিভারি')),
         ],
       ]),
     );
