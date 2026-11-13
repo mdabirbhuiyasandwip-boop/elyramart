@@ -27,6 +27,7 @@ class AuthService {
     );
     final user = credential.user!;
     await user.updateDisplayName(name.trim());
+    await user.sendEmailVerification();
     await _db.collection('users').doc(user.uid).set({
       'uid': user.uid,
       'name': name.trim(),
@@ -57,6 +58,13 @@ class AuthService {
 
   Future<void> signIn({required String email, required String password}) =>
       _auth.signInWithEmailAndPassword(email: email.trim(), password: password);
+
+  Future<void> sendPasswordReset(String email) => _auth.sendPasswordResetEmail(email: email.trim());
+
+  Future<void> resendVerification() async {
+    final user = _auth.currentUser;
+    if (user != null && !user.emailVerified) await user.sendEmailVerification();
+  }
 
   Future<void> signOut() => _auth.signOut();
 
