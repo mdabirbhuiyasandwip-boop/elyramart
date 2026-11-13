@@ -15,6 +15,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      HAS_RELEASE_SIGNING:  ${{ env.HAS_RELEASE_SIGNING == 'true' }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -71,7 +73,7 @@ jobs:
           retention-days: 14
 
       - name: Configure Play Store release signing
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_KEY_ALIAS != '' && secrets.ANDROID_KEYSTORE_PASSWORD != '' && secrets.ANDROID_KEY_PASSWORD != '' }}
+        if:  ${{ env.HAS_RELEASE_SIGNING == 'true' }}
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -114,11 +116,11 @@ jobs:
           PYCODE
 
       - name: Build signed Play Store App Bundle
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_KEY_ALIAS != '' && secrets.ANDROID_KEYSTORE_PASSWORD != '' && secrets.ANDROID_KEY_PASSWORD != '' }}
+        if:  ${{ env.HAS_RELEASE_SIGNING == 'true' }}
         run: flutter build appbundle --release
 
       - name: Upload signed AAB artifact
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_KEY_ALIAS != '' && secrets.ANDROID_KEYSTORE_PASSWORD != '' && secrets.ANDROID_KEY_PASSWORD != '' }}
+        if:  ${{ env.HAS_RELEASE_SIGNING == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: Elyramart-Play-Store-AAB
@@ -127,5 +129,5 @@ jobs:
           retention-days: 14
 
       - name: Explain missing Play signing secrets
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 == '' || secrets.ANDROID_KEY_ALIAS == '' || secrets.ANDROID_KEYSTORE_PASSWORD == '' || secrets.ANDROID_KEY_PASSWORD == '' }}
+        if:  ${{ env.HAS_RELEASE_SIGNING != 'true' }}
         run: echo "APK can be built, but Play Store AAB was skipped because release signing secrets are not configured."
