@@ -1,4 +1,4 @@
-name: Build Elyramart Android APK and AAB
+name: Build Elyramart Android APK and Play Store AAB
 
 on:
   push:
@@ -74,13 +74,62 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Build Play Store App Bundle
+      - name: Configure Play Store release signing
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_KEY_ALIAS != '' && secrets.ANDROID_KEYSTORE_PASSWORD != '' && secrets.ANDROID_KEY_PASSWORD != '' }}
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          cat > android/key.properties <<EOF
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyPassword=$ANDROID_KEY_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          storeFile=upload-keystore.jks
+          EOF
+          python3 - <<'PYCODE'
+          from pathlib import Path
+          p = Path('android/app/build.gradle.kts')
+          s = p.read_text()
+          if 'val keystoreProperties' not in s:
+              s = 'import java.util.Properties\nimport java.io.FileInputStream\n\n' + s
+              s = s.replace('android {', '''
+          val keystoreProperties = Properties()
+          val keystorePropertiesFile = rootProject.file("key.properties")
+          keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+          android {
+          ''', 1)
+              s = s.replace('buildTypes {', '''
+              signingConfigs {
+                  create("release") {
+                      keyAlias = keystoreProperties["keyAlias"] as String
+                      keyPassword = keystoreProperties["keyPassword"] as String
+                      storeFile = file(keystoreProperties["storeFile"] as String)
+                      storePassword = keystoreProperties["storePassword"] as String
+                  }
+              }
+              buildTypes {
+          ''', 1)
+              s = s.replace('signingConfig = signingConfigs.getByName("debug")',
+                            'signingConfig = signingConfigs.getByName("release")')
+              p.write_text(s)
+          PYCODE
+
+      - name: Build signed Play Store App Bundle
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_KEY_ALIAS != '' && secrets.ANDROID_KEYSTORE_PASSWORD != '' && secrets.ANDROID_KEY_PASSWORD != '' }}
         run: flutter build appbundle --release
 
-      - name: Upload AAB artifact
+      - name: Upload signed AAB artifact
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_KEY_ALIAS != '' && secrets.ANDROID_KEYSTORE_PASSWORD != '' && secrets.ANDROID_KEY_PASSWORD != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: Elyramart-Play-Store-AAB
           path: build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
           retention-days: 14
+
+      - name: Explain missing Play signing secrets
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 == '' || secrets.ANDROID_KEY_ALIAS == '' || secrets.ANDROID_KEYSTORE_PASSWORD == '' || secrets.ANDROID_KEY_PASSWORD == '' }}
+        run: echo "APK can be built, but Play Store AAB was skipped because release signing secrets are not configured."
