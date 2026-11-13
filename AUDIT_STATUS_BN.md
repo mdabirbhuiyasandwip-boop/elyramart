@@ -16,20 +16,20 @@
 - Play Store AAB build কেবল private release keystore secrets থাকলে চলবে; debug-signed AAB-কে Play Store-ready হিসেবে দেখানো হবে না।
 - Firebase deployment config `firebase.json` এবং empty composite index file `firestore.indexes.json` যোগ করা হয়েছে।
 - Storage rules সংশোধন: approved seller নিজের product-image path-এ JPG/PNG/WEBP 5 MB-এর কম ছবি upload করতে পারবে; admin-ও পারবে।
-- Repository-তে বাংলা audit report আপডেট করা হয়েছে।
+- Repository-তে বাংলা audit report, owner final setup guide এবং secure Admin custom-claim bootstrap script যোগ/হালনাগাদ করা হয়েছে।
 
 ## বাস্তব পরীক্ষা ও যা এখনো নিশ্চিত নয়
-- v0.21 source package-এর আগের validation test 5/5 সফল হয়েছিল। এই ধাপে repository-তে trusted checkout Cloud Function ও validation tests যোগ করা হয়েছে; স্থানীয় Node validation tests 3/3 সফল। Cloud Function deploy বা live Firebase test এখনো হয়নি।
+- v0.21 source package-এর আগের validation test 5/5 সফল হয়েছিল। এই repository-র trusted checkout input validation test 3/3 সফল হয়েছে। Cloud Function deploy বা live Firebase test এখনো হয়নি।
 - এই পরিবেশে Flutter/Dart SDK নেই; Flutter analyze/test এবং Android APK/AAB build-এর সফল ফল এখনো পাওয়া যায়নি।
 - GitHub Actions commit status-এ এখনো কোনো completed check দেখা যায়নি।
 - Firebase rules/Firestore/Auth/Storage live project-এ deploy বা end-to-end পরীক্ষা করা হয়নি।
-- Current checkout client-side Firestore write করে; production-এ item price/stock server-side যাচাই ছাড়া অর্ডার total বিশ্বাস করা নিরাপদ নয়। Trusted checkout function যোগ/ডেপ্লয় করে সেটি অ্যাপে যুক্ত করতে হবে।
+- Checkout এখন callable Cloud Function ব্যবহার করে; server-side function current active product, price, stock ও quantity transaction-এ যাচাই করে stock কমায় এবং order তৈরি করে। Firestore client-side order creation বন্ধ করা হয়েছে। Function validation tests 3/3 সফল; তবে Firebase project-এ deploy ও live concurrency test বাকি।
 
 ## অবশিষ্ট কাজ
 1. GitHub Actions-এ Flutter analyze/test এবং Android APK build সফল করা; error হলে ঠিক করা।
 2. Firebase Console-এ Email/Password Auth enable, Firestore ও Storage initialize করা।
 3. Owner-এর অনুমতিতে Firestore/Storage rules deploy ও বাস্তব customer/seller/admin access পরীক্ষা করা।
-4. Owner-এর Firebase Auth UID দিয়ে trusted environment-এ Admin custom claim bootstrap করা।
+4. Owner-এর Firebase Auth UID দিয়ে trusted environment-এ `tools/set_admin_claim.js` ব্যবহার করে Admin custom claim bootstrap করা।
 5. Callable checkout Cloud Function deploy করে real Firebase project-এ order total, price, stock decrement এবং concurrent order behaviour পরীক্ষা করা।
 6. Product image upload UI, seller inventory update, seller order fulfilment ও customer order tracking পরীক্ষা/সম্পূর্ণ করা।
 7. বাংলা/English অনুবাদ account, seller, admin, cart ও service screens-এ সম্পূর্ণ করা।
