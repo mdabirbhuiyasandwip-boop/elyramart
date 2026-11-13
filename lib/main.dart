@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'screens/account_page.dart';
 import 'screens/catalog_page.dart';
+import 'screens/service_request_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -112,7 +113,7 @@ class _ElyramartAppState extends State<ElyramartApp> {
   Widget _services(bool en) => ListView(padding: const EdgeInsets.all(16), children: [
     Text(en ? 'Home services' : 'হোম সার্ভিস', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
     for (final item in (en ? ['Electrician','Plumber','Appliance technician'] : ['ইলেকট্রিশিয়ান','প্লাম্বার','ইলেকট্রনিক্স টেকনিশিয়ান']))
-      Card(child: ListTile(leading: const Icon(Icons.build_outlined), title: Text(item), trailing: const Icon(Icons.chevron_right))),
+      Card(child: ListTile(leading: const Icon(Icons.build_outlined), title: Text(item), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ServiceRequestPage(service: item))))),
     Card(child: ListTile(leading: const Icon(Icons.delivery_dining), title: Text(en ? 'Request a delivery' : 'ডেলিভারি অনুরোধ'), subtitle: Text(en ? 'Coming soon' : 'শীঘ্রই আসছে'))),
   ]);
 
