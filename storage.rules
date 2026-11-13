@@ -1,15 +1,30 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    function signedIn() { return request.auth != null; }
-    function isAdmin() { return signedIn() && request.auth.token.admin == true; }
-
-    match /product-images/{allPaths=**} {
-      allow read: if true;
-      allow write: if isAdmin()
-        && request.resource.size < 5 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
+    function signedIn() {
+      return request.auth != null;
     }
+
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    function isApprovedSeller(uid) {
+      return firestore.get(/databases/(default)/documents/users/$(uid)).data.role == 'seller';
+    }
+
+    match /product-images/{sellerUid}/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin() || (
+        signedIn()
+        && request.auth.uid == sellerUid
+        && isApprovedSeller(sellerUid)
+        && request.resource != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)')
+      );
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }
