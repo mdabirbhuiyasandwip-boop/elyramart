@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' show IdTokenResult;
 import '../services/auth_service.dart';
 import 'admin_page.dart';
+import 'seller_page.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -94,6 +95,15 @@ class _AccountPageState extends State<AccountPage> {
           const SizedBox(height: 12),
           Text(user.displayName ?? user.email ?? 'Elyramart user', textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 20),
+          FutureBuilder<Map<String, dynamic>?>(
+            future: _auth.loadMyProfile(),
+            builder: (context, snapshot) {
+              if (snapshot.data?['role'] == 'seller') return FilledButton.icon(
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SellerPage())),
+                icon: const Icon(Icons.storefront), label: const Text('Open seller dashboard'));
+              return const SizedBox.shrink();
+            },
+          ),
           FutureBuilder<IdTokenResult>(
             future: user.getIdTokenResult(true),
             builder: (context, snapshot) {
