@@ -144,6 +144,43 @@ class _ElyramartAppState extends State<ElyramartApp> {
     for (final item in (en ? ['Electrician','Plumber','Appliance technician'] : ['ইলেকট্রিশিয়ান','প্লাম্বার','ইলেকট্রনিক্স টেকনিশিয়ান']))
       Card(child: ListTile(leading: const Icon(Icons.build_outlined), title: Text(item), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ServiceRequestPage(service: item))))),
     Card(child: ListTile(leading: const Icon(Icons.delivery_dining), title: Text(en ? 'Request a delivery' : 'ডেলিভারি অনুরোধ'), subtitle: Text(en ? 'Send a delivery request' : 'ডেলিভারির অনুরোধ পাঠান'), onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ServiceRequestPage(service: en ? 'Delivery' : 'ডেলিভারি'))))),
+    const SizedBox(height: 18),
+    Text(en ? 'My service requests' : 'আমার সার্ভিস অনুরোধ', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+    const SizedBox(height: 8),
+    if (FirebaseAuth.instance.currentUser == null)
+      Text(en ? 'Sign in to track your requests.' : 'অনুরোধের অবস্থা দেখতে লগইন করুন।')
+    else
+      StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: FirebaseFirestore.instance
+            .collection('serviceRequests')
+            .where('customerUid', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+            .limit(30)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) return Text(en ? 'Could not load requests.' : 'অনুরোধ লোড করা যায়নি।');
+          if (!snapshot.hasData) return const LinearProgressIndicator();
+          if (snapshot.data!.docs.isEmpty) {
+            return ListTile(title: Text(en ? 'No service requests yet.' : 'এখনো কোনো সার্ভিস অনুরোধ নেই।'));
+          }
+          return Column(
+            children: snapshot.data!.docs.map((doc) {
+              final request = doc.data();
+              final status = request['status']?.toString() ?? 'pending';
+              return Card(
+                child: ListTile(
+                  leading: const Icon(Icons.handyman_outlined),
+                  title: Text(request['service']?.toString() ?? 'Service'),
+                  subtitle: Text(
+                    '${request['details'] ?? ''}\\n'
+                    '${en ? 'Status' : 'অবস্থা'}: $status',
+                  ),
+                  isThreeLine: true,
+                ),
+              );
+            }).toList(),
+          );
+        },
+      ),
   ]);
 
   Widget _settings(bool en) => ListView(children: [
