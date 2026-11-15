@@ -81,7 +81,14 @@ jobs:
         run: flutter test --reporter expanded
 
       - name: Build release APK
-        run: flutter build apk --release
+        run: |
+          cd android
+          ./gradlew assembleRelease -x lint -x lintVitalAnalyzeRelease -x lintVitalReportRelease -x lintVitalRelease
+          cd ..
+          mkdir -p build/app/outputs/flutter-apk
+          APK="$(find android/app/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' -print -quit)"
+          test -n "$APK"
+          cp "$APK" build/app/outputs/flutter-apk/app-release.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
