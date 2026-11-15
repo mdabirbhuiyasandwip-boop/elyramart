@@ -64,7 +64,7 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
     final phone = _phone.text.trim();
     final people = int.tryParse(_people.text.trim());
 
-    if (details.length < 5 || address.length < 3 || phone.length < 6 ||
+    if (details.length < 5 || address.length < 6 || phone.length < 6 ||
         ((_isTravel || _isToll) && (_from.text.trim().isEmpty || _to.text.trim().isEmpty)) ||
         ((_isTravel || _isHotel) && _date.text.trim().isEmpty) ||
         ((_isTravel || _isHotel) && (people == null || people < 1 || people > 30))) {
