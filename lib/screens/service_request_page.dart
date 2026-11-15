@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ServiceRequestPage extends StatefulWidget {
   const ServiceRequestPage({
@@ -29,6 +31,35 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
   final _people = TextEditingController(text: '1');
   final _budget = TextEditingController();
   bool _busy = false;
+  bool _locating = false;
+
+  Future<void> _useMyLocation() async {
+    setState(() => _locating = true);
+    try {
+      final enabled = await Geolocator.isLocationServiceEnabled();
+      if (!enabled) throw Exception(_en ? 'Turn on GPS/location services.' : 'ফোনের GPS/লোকেশন চালু করুন।');
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+        throw Exception(_en ? 'Location permission was not granted.' : 'লোকেশন অনুমতি দেওয়া হয়নি।');
+      }
+      final position = await Geolocator.getCurrentPosition();
+      final coords = '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
+      _address.text = coords;
+      if (_from.text.isEmpty && (_isTravel || _isToll)) _from.text = coords;
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_en ? 'GPS location added.' : 'GPS লোকেশন যোগ হয়েছে।')));
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
+  }
+
+  Future<void> _openMap() async {
+    final query = Uri.encodeComponent(_address.text.trim().isEmpty ? 'Chattogram, Bangladesh' : _address.text.trim());
+    final uri = Uri.parse('https://www.openstreetmap.org/search?query=$query');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
 
   bool get _en => widget.english;
   bool get _isTravel => widget.serviceCode == 'bus' || widget.serviceCode == 'launch';
@@ -154,6 +185,11 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
           ],
           if (_isRent || _isHotel)
             _field(_address, _en ? 'Preferred city / area' : 'পছন্দের শহর / এলাকা'),
+          if (_isRent || _isHotel || (!_isRent && !_isHotel))
+            Wrap(spacing: 8, children: [
+              OutlinedButton.icon(onPressed: _locating ? null : _useMyLocation, icon: const Icon(Icons.my_location), label: Text(_locating ? (_en ? 'Locating...' : 'লোকেশন খুঁজছে...') : (_en ? 'Use my GPS location' : 'আমার GPS লোকেশন নিন'))),
+              OutlinedButton.icon(onPressed: _openMap, icon: const Icon(Icons.map_outlined), label: Text(_en ? 'Open map' : 'ম্যাপ খুলুন')),
+            ]),
           if (_isTravel || _isHotel)
             _field(_date, _en ? (_isHotel ? 'Check-in date (YYYY-MM-DD)' : 'Travel date (YYYY-MM-DD)') : (_isHotel ? 'চেক-ইন তারিখ (YYYY-MM-DD)' : 'যাত্রার তারিখ (YYYY-MM-DD)')),
           if (_isHotel)
