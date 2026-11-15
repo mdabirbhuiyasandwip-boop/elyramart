@@ -79,14 +79,60 @@ class _ElyramartAppState extends State<ElyramartApp> {
         _category(Icons.plumbing_outlined, en ? 'Plumbing' : 'প্লাম্বিং', 'plumbing', en),
         _category(Icons.electrical_services_outlined, en ? 'Technician' : 'টেকনিশিয়ান', 'technician', en),
         _category(Icons.delivery_dining, en ? 'Delivery' : 'ডেলিভারি', 'delivery', en),
+        _category(Icons.home_work_outlined, en ? 'House rent' : 'বাসা ভাড়া', 'house_rent', en),
+        _category(Icons.hotel_outlined, en ? 'Hotel booking' : 'হোটেল বুকিং', 'hotel', en),
+        _category(Icons.directions_bus_outlined, en ? 'Bus tickets' : 'বাস টিকিট', 'bus', en),
+        _category(Icons.directions_boat_outlined, en ? 'Launch tickets' : 'লঞ্চ টিকিট', 'launch', en),
+        _category(Icons.toll_outlined, en ? 'Toll service' : 'টোল সেবা', 'toll', en),
       ]),
     const SizedBox(height: 18),
     Card(child: ListTile(leading: const Icon(Icons.info_outline), title: Text(en ? 'Marketplace preview' : 'মার্কেটপ্লেস প্রিভিউ'),
       subtitle: Text(en ? 'Products and sellers will appear after admin setup.' : 'অ্যাডমিন সেটআপের পর পণ্য ও বিক্রেতা দেখা যাবে।'))),
   ]);
 
-  Widget _category(IconData icon, String label, String category, bool en) => Card(child: InkWell(borderRadius: BorderRadius.circular(12), onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => (category == 'plumbing' || category == 'technician' || category == 'delivery') ? ServiceRequestPage(service: category == 'plumbing' ? (en ? 'Plumber' : 'প্লাম্বার') : category == 'technician' ? (en ? 'Technician' : 'টেকনিশিয়ান') : (en ? 'Delivery' : 'ডেলিভারি'), english: en) : CatalogPage(category: category, english: en))),
-    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, size: 30, color: brand), const SizedBox(height: 8), Text(label, style: const TextStyle(fontWeight: FontWeight.w600))])));
+  Widget _category(IconData icon, String label, String category, bool en) {
+    const requestCategories = {
+      'plumbing', 'technician', 'delivery', 'house_rent', 'hotel', 'bus', 'launch', 'toll',
+    };
+    return Card(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          if (requestCategories.contains(category)) {
+            final names = {
+              'plumbing': en ? 'Plumber' : 'প্লাম্বার',
+              'technician': en ? 'Technician' : 'টেকনিশিয়ান',
+              'delivery': en ? 'Delivery' : 'ডেলিভারি',
+              'house_rent': en ? 'House rent' : 'বাসা ভাড়া',
+              'hotel': en ? 'Hotel booking' : 'হোটেল বুকিং',
+              'bus': en ? 'Bus ticket' : 'বাস টিকিট',
+              'launch': en ? 'Launch ticket' : 'লঞ্চ টিকিট',
+              'toll': en ? 'Toll service' : 'টোল সেবা',
+            };
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => ServiceRequestPage(
+                service: names[category]!,
+                serviceCode: category,
+                english: en,
+              ),
+            ));
+          } else {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => CatalogPage(category: category, english: en),
+            ));
+          }
+        },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 30, color: brand),
+            const SizedBox(height: 8),
+            Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _orders(bool en) {
     final user = FirebaseAuth.instance.currentUser;
@@ -143,6 +189,23 @@ class _ElyramartAppState extends State<ElyramartApp> {
     Text(en ? 'Home services' : 'হোম সার্ভিস', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
     for (final item in (en ? ['Electrician','Plumber','Appliance technician'] : ['ইলেকট্রিশিয়ান','প্লাম্বার','ইলেকট্রনিক্স টেকনিশিয়ান']))
       Card(child: ListTile(leading: const Icon(Icons.build_outlined), title: Text(item), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ServiceRequestPage(service: item, english: en))))),
+    const SizedBox(height: 12),
+    Text(en ? 'Travel, stay & daily needs' : 'যাতায়াত, থাকা ও অন্যান্য সেবা', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+    for (final item in [
+      ('house_rent', en ? 'House rent' : 'বাসা ভাড়া', Icons.home_work_outlined),
+      ('hotel', en ? 'Hotel booking' : 'হোটেল বুকিং', Icons.hotel_outlined),
+      ('bus', en ? 'Bus tickets' : 'বাস টিকিট', Icons.directions_bus_outlined),
+      ('launch', en ? 'Launch tickets' : 'লঞ্চ টিকিট', Icons.directions_boat_outlined),
+      ('toll', en ? 'Toll service' : 'টোল সেবা', Icons.toll_outlined),
+    ])
+      Card(child: ListTile(
+        leading: Icon(item.$3),
+        title: Text(item.$2),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => ServiceRequestPage(service: item.$2, serviceCode: item.$1, english: en),
+        )),
+      )),
     Card(child: ListTile(leading: const Icon(Icons.delivery_dining), title: Text(en ? 'Request a delivery' : 'ডেলিভারি অনুরোধ'), subtitle: Text(en ? 'Send a delivery request' : 'ডেলিভারির অনুরোধ পাঠান'), onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ServiceRequestPage(service: en ? 'Delivery' : 'ডেলিভারি', english: en))))),
     const SizedBox(height: 18),
     Text(en ? 'My service requests' : 'আমার সার্ভিস অনুরোধ', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
