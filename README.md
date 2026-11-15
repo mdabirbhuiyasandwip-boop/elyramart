@@ -10,7 +10,7 @@ Flutter marketplace starter for Android, using Firebase.
 - Admin dashboard protected by Firebase custom claim `admin: true`
 - Product creation with optional seller product-photo upload to Firebase Storage and image display in the catalogue
 - Persistent shopping cart (saved on device) and cash-on-delivery checkout with phone and delivery address
-- Home-service request submission and admin request status workflow
+- Home-service, house-rental enquiry, hotel-stay enquiry, bus/launch travel request and toll-information request forms; customer request history and admin status workflow (these are enquiries, not live ticketing/confirmed reservations)
 - Category-specific product browsing from the home screen
 - Customer order history and admin order status updates
 - Initial Firestore and Storage security rules
@@ -38,4 +38,4 @@ Open GitHub Actions > **Build Elyramart Android APK and Play Store AAB**. The wo
 A signed Play Store AAB is produced only after the owner configures these repository Actions secrets: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEY_ALIAS`, `ANDROID_KEYSTORE_PASSWORD`, and `ANDROID_KEY_PASSWORD`. Never put the keystore or passwords in the repository.
 
 ## Important launch gaps
-This is not yet ready for public production or Play Store release. Payment gateway integration, delivery partner workflow, push notifications, complete Bangla translation across all screens, privacy policy/terms owner review, medicine-sale legal compliance, full QA, app signing key management, Play Console declarations and closed testing are still required. Cash on delivery is the only implemented payment option. Firestore/Storage rules and the trusted checkout Cloud Function must be deployed and tested in the owner's Firebase project before launch. The release workflow can build an APK; signed AAB generation remains gated on private upload-keystore secrets.
+This is not yet ready for public production or Play Store release. Live house/property listings and map search, hotel inventory and confirmed room booking, bus/launch operator schedules and ticket APIs, official toll data/payment integration, payment gateway, delivery partner workflow, push notifications, complete Bangla translation across all screens, privacy policy/terms owner review, medicine-sale legal compliance, full QA, app signing key management, Play Console declarations and closed testing are still required. Cash on delivery is the only implemented payment option. Firestore/Storage rules and the trusted checkout Cloud Function must be deployed and tested in the owner's Firebase project before launch. The release workflow can build an APK; signed AAB generation remains gated on private upload-keystore secrets.
