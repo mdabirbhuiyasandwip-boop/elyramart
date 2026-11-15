@@ -64,6 +64,69 @@ class _AdminPageState extends State<AdminPage> {
     ));
   }
 
+  Future<void> _showAddProperty() async {
+    final title = TextEditingController();
+    final city = TextEditingController();
+    final area = TextEditingController();
+    final rent = TextEditingController();
+    final bedrooms = TextEditingController(text: '2');
+    final phone = TextEditingController();
+    final imageUrl = TextEditingController();
+    final description = TextEditingController();
+    final ok = await showDialog<bool>(context: context, builder: (context) => AlertDialog(
+      title: const Text('Add house rental listing'),
+      content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
+        TextField(controller: title, decoration: const InputDecoration(labelText: 'Listing title')),
+        TextField(controller: city, decoration: const InputDecoration(labelText: 'City')),
+        TextField(controller: area, decoration: const InputDecoration(labelText: 'Area / neighbourhood')),
+        TextField(controller: rent, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Monthly rent (BDT)')),
+        TextField(controller: bedrooms, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Bedrooms')),
+        TextField(controller: phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Contact phone')),
+        TextField(controller: imageUrl, decoration: const InputDecoration(labelText: 'Photo URL (optional)')),
+        TextField(controller: description, maxLines: 3, decoration: const InputDecoration(labelText: 'Details')),
+      ])),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+        FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Publish listing')),
+      ],
+    ));
+    final monthlyRent = double.tryParse(rent.text.trim());
+    final roomCount = int.tryParse(bedrooms.text.trim());
+    if (ok == true) {
+      if (title.text.trim().length < 3 || city.text.trim().length < 2 ||
+          area.text.trim().length < 2 || monthlyRent == null || monthlyRent <= 0 ||
+          roomCount == null || roomCount < 0 || phone.text.trim().length < 6 ||
+          description.text.trim().length < 5) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Complete all required listing fields correctly.')),
+        );
+      } else {
+        try {
+          await _db.collection('propertyListings').add({
+            'title': title.text.trim(),
+            'city': city.text.trim(),
+            'area': area.text.trim(),
+            'monthlyRent': monthlyRent,
+            'bedrooms': roomCount,
+            'phone': phone.text.trim(),
+            'imageUrl': imageUrl.text.trim(),
+            'description': description.text.trim(),
+            'status': 'active',
+            'createdAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('House listing published.')),
+          );
+        } catch (e) {
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not publish listing: $e')));
+        }
+      }
+    }
+    title.dispose(); city.dispose(); area.dispose(); rent.dispose(); bedrooms.dispose();
+    phone.dispose(); imageUrl.dispose(); description.dispose();
+  }
+
   Future<void> _approveSeller(String uid) async {
     final batch = _db.batch();
     batch.update(_db.collection('sellerApplications').doc(uid), {'status': 'approved', 'reviewedAt': FieldValue.serverTimestamp()});
@@ -77,7 +140,7 @@ class _AdminPageState extends State<AdminPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Elyramart Admin')),
+    appBar: AppBar(title: const Text('Elyramart Admin'), actions: [IconButton(tooltip: 'Add house listing', onPressed: _showAddProperty, icon: const Icon(Icons.add_home_work_outlined))]),
     floatingActionButton: FloatingActionButton.extended(onPressed: _showAddProduct, icon: const Icon(Icons.add), label: const Text('Add product')),
     body: ListView(padding: const EdgeInsets.all(16), children: [
       Text('Seller applications', style: Theme.of(context).textTheme.titleLarge),
@@ -217,6 +280,41 @@ class _AdminPageState extends State<AdminPage> {
                   PopupMenuItem(value: 'out_for_delivery', child: Text('Out for delivery')),
                   PopupMenuItem(value: 'delivered', child: Text('Delivered')),
                   PopupMenuItem(value: 'cancelled', child: Text('Cancel order')),
+                ],
+              ),
+            ));
+          }).toList());
+        },
+      ),
+      const SizedBox(height: 20),
+      Text('House rental listings', style: Theme.of(context).textTheme.titleLarge),
+      StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: _db.collection('propertyListings').orderBy('createdAt', descending: true).limit(50).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) return Text('Property listings error: ${snapshot.error}');
+          if (!snapshot.hasData) return const LinearProgressIndicator();
+          if (snapshot.data!.docs.isEmpty) return const ListTile(title: Text('No house listings yet. Use the home icon above to add one.'));
+          return Column(children: snapshot.data!.docs.map((doc) {
+            final p = doc.data();
+            return Card(child: ListTile(
+              title: Text(p['title']?.toString() ?? 'House'),
+              subtitle: Text('${p['area'] ?? ''}, ${p['city'] ?? ''} • BDT ${p['monthlyRent'] ?? 0}/month • ${p['status'] ?? 'active'}'),
+              trailing: PopupMenuButton<String>(
+                onSelected: (action) async {
+                  try {
+                    if (action == 'delete') {
+                      await doc.reference.delete();
+                    } else {
+                      await doc.reference.update({'status': action, 'updatedAt': FieldValue.serverTimestamp()});
+                    }
+                  } catch (e) {
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                  }
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'active', child: Text('Publish / activate')),
+                  PopupMenuItem(value: 'paused', child: Text('Pause listing')),
+                  PopupMenuItem(value: 'delete', child: Text('Delete listing')),
                 ],
               ),
             ));
