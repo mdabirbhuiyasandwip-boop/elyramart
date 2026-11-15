@@ -58,6 +58,20 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    match /propertyListings/{listingId} {
+      allow read: if resource.data.status == 'active' || isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.title is string
+        && request.resource.data.city is string
+        && request.resource.data.area is string
+        && request.resource.data.monthlyRent is number
+        && request.resource.data.monthlyRent > 0
+        && request.resource.data.phone is string
+        && request.resource.data.status == 'active';
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
     match /serviceRequests/{requestId} {
       allow create: if signedIn()
         && request.resource.data.customerUid == request.auth.uid
