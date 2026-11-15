@@ -77,6 +77,7 @@ class CatalogPage extends StatefulWidget {
 class _CatalogPageState extends State<CatalogPage> {
   final _db = FirebaseFirestore.instance;
   bool _cartLoaded = false;
+  String _searchTerm = '';
 
   @override
   void initState() {
@@ -85,7 +86,22 @@ class _CatalogPageState extends State<CatalogPage> {
   }
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(widget.english ? 'Shop products' : 'পণ্য কিনুন'), actions: [
+    appBar: AppBar(title: Text(widget.english ? 'Shop products' : 'পণ্য কিনুন'), bottom: PreferredSize(
+      preferredSize: const Size.fromHeight(64),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        child: TextField(
+          onChanged: (value) => setState(() => _searchTerm = value.trim().toLowerCase()),
+          decoration: InputDecoration(
+            hintText: widget.english ? 'Search products...' : 'পণ্য খুঁজুন...',
+            prefixIcon: const Icon(Icons.search),
+            filled: true,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+            contentPadding: const EdgeInsets.symmetric(vertical: 0),
+          ),
+        ),
+      ),
+    ), actions: [
       IconButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CartPage(english: widget.english))).then((_) => setState(() {})), icon: Badge(label: Text(CartService.instance.items.length.toString()), child: const Icon(Icons.shopping_cart_outlined))),
     ]),
     body: !_cartLoaded ? const Center(child: CircularProgressIndicator()) : StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -95,9 +111,16 @@ class _CatalogPageState extends State<CatalogPage> {
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         final allProducts = snapshot.data!.docs;
         final selected = widget.category?.toLowerCase();
-        final products = selected == null ? allProducts : allProducts.where((doc) {
-          final value = (doc.data()['category'] ?? '').toString().toLowerCase();
-          return value == selected || (selected == 'beauty' && (value == 'beauty & care' || value == 'cosmetics'));
+        final products = allProducts.where((doc) {
+          final data = doc.data();
+          final category = (data['category'] ?? '').toString().toLowerCase();
+          final categoryMatches = selected == null || category == selected ||
+              (selected == 'beauty' && (category == 'beauty & care' || category == 'cosmetics'));
+          final searchable = [
+            data['title'], data['category'], data['description'], data['brand'],
+          ].whereType<Object>().join(' ').toLowerCase();
+          final searchMatches = _searchTerm.isEmpty || searchable.contains(_searchTerm);
+          return categoryMatches && searchMatches;
         }).toList();
         if (products.isEmpty) return Center(child: Text(widget.english ? 'No products available in this category yet.' : 'এই ক্যাটাগরিতে এখনো কোনো পণ্য নেই।'));
         return ListView.builder(
