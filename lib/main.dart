@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 import 'screens/account_page.dart';
 import 'screens/catalog_page.dart';
 import 'screens/service_request_page.dart';
+import 'screens/property_listings_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -92,13 +93,15 @@ class _ElyramartAppState extends State<ElyramartApp> {
 
   Widget _category(IconData icon, String label, String category, bool en) {
     const requestCategories = {
-      'plumbing', 'technician', 'delivery', 'house_rent', 'hotel', 'bus', 'launch', 'toll',
+      'plumbing', 'technician', 'delivery', 'hotel', 'bus', 'launch', 'toll',
     };
     return Card(
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
-          if (requestCategories.contains(category)) {
+          if (category == 'house_rent') {
+            Navigator.of(context).push(MaterialPageRoute(builder: (_) => PropertyListingsPage(english: en)));
+          } else if (requestCategories.contains(category)) {
             final names = {
               'plumbing': en ? 'Plumber' : 'প্লাম্বার',
               'technician': en ? 'Technician' : 'টেকনিশিয়ান',
@@ -203,7 +206,9 @@ class _ElyramartAppState extends State<ElyramartApp> {
         title: Text(item.$2),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) => ServiceRequestPage(service: item.$2, serviceCode: item.$1, english: en),
+          builder: (_) => item.$1 == 'house_rent'
+              ? PropertyListingsPage(english: en)
+              : ServiceRequestPage(service: item.$2, serviceCode: item.$1, english: en),
         )),
       )),
     Card(child: ListTile(leading: const Icon(Icons.delivery_dining), title: Text(en ? 'Request a delivery' : 'ডেলিভারি অনুরোধ'), subtitle: Text(en ? 'Send a delivery request' : 'ডেলিভারির অনুরোধ পাঠান'), onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ServiceRequestPage(service: en ? 'Delivery' : 'ডেলিভারি', english: en))))),
