@@ -165,7 +165,7 @@ class _AdminPageState extends State<AdminPage> {
             final request = doc.data();
             return Card(child: ListTile(
               title: Text(request['service']?.toString() ?? 'Service'),
-              subtitle: Text('${request['details'] ?? ''} • ${request['phone'] ?? ''} • ${request['address'] ?? ''}\nStatus: ${request['status'] ?? 'pending'}'),
+              subtitle: Text('${request['details'] ?? ''}\nRoute: ${request['fromLocation'] ?? '—'} → ${request['toLocation'] ?? '—'} • Date: ${request['startDate'] ?? '—'} • People: ${request['peopleCount'] ?? '—'}\nPhone: ${request['phone'] ?? ''} • Area: ${request['address'] ?? ''} • Budget/vehicle: ${request['budget'] ?? '—'}\nStatus: ${request['status'] ?? 'pending'}'),
               isThreeLine: true,
               trailing: PopupMenuButton<String>(
                 onSelected: (status) async {
